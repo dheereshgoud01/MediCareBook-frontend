@@ -44,13 +44,13 @@ client.interceptors.response.use(
 export const authApi = {
   login: (credentials) => client.post('/api/auth/login', credentials),
   register: (userData) => client.post('/api/auth/register', userData),
-  getUsers: () => client.get('/api/auth/users'),
+  getUsers: () => client.get('/api/auth/users', { params: { _t: Date.now() } }),
   updateUser: (userId, data) => client.put(`/api/auth/user/${userId}`, data),
   deleteUser: (userId) => client.delete(`/api/auth/user/${userId}`),
 };
 
 export const doctorApi = {
-  list: () => client.get('/api/doctors/list'),
+  list: () => client.get('/api/doctors/list', { params: { _t: Date.now() } }),
   getProfileByUser: (userId) => client.get(`/api/doctors/profile/user/${userId}`),
   updateProfile: (doctorId, data) => client.put(`/api/doctors/profile/${doctorId}`, data),
   apply: (data) => client.post('/api/doctors/apply', data),
