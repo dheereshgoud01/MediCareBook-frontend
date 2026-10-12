@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base API configuration from environment or fallback to Spring Boot port 8000
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_URL || 'http://localhost:8000';
 
 const client = axios.create({
   baseURL: API_BASE_URL,
