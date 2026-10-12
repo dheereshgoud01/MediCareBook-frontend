@@ -19,7 +19,7 @@ function App() {
   const getViewFromPath = (user) => {
     const pathname = window.location.pathname.toLowerCase();
     if (pathname === '/login' || pathname === '/auth' || pathname === '/register') {
-      return user ? 'dashboard' : 'auth';
+      return 'auth';
     }
     if (pathname === '/dashboard') {
       return user ? 'dashboard' : 'auth';
@@ -54,9 +54,33 @@ function App() {
     window.history.replaceState({ view: initialView }, '', targetPath);
   }, []);
 
-  // Listen for browser Back (←) and Forward (→) buttons
+  // Listen for browser Back (←) and Forward (→) buttons with security guards
   useEffect(() => {
     const handlePopState = (event) => {
+      const currentPath = window.location.pathname.toLowerCase();
+
+      // SECURITY GUARD 1: Navigating back to login screen immediately invalidates active session
+      if (currentPath === '/login' || currentPath === '/auth' || currentPath === '/register') {
+        localStorage.removeItem('medicare_token');
+        localStorage.removeItem('medicare_user');
+        setSessionUser(null);
+        setView('auth');
+        return;
+      }
+
+      // SECURITY GUARD 2: Accessing /dashboard via forward/back requires a validated session
+      if (currentPath === '/dashboard') {
+        const storedToken = localStorage.getItem('medicare_token');
+        const storedUser = localStorage.getItem('medicare_user');
+        if (!storedToken || !storedUser) {
+          // No valid credentials in storage - forward navigation bypass blocked!
+          setSessionUser(null);
+          setView('auth');
+          window.history.replaceState({ view: 'auth' }, '', '/login');
+          return;
+        }
+      }
+
       if (event.state && event.state.view) {
         setView(event.state.view);
       } else {
@@ -86,14 +110,15 @@ function App() {
     }
     localStorage.setItem('medicare_user', JSON.stringify(userData));
     setSessionUser(userData);
-    navigateTo('dashboard');
+    // Use replace=true so the login screen is replaced in history stack by the dashboard
+    navigateTo('dashboard', true);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('medicare_token');
     localStorage.removeItem('medicare_user');
     setSessionUser(null);
-    navigateTo('landing');
+    navigateTo('landing', true);
   };
 
   return (
