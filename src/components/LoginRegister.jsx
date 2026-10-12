@@ -119,14 +119,6 @@ function LoginRegister({ onAuthSuccess, onBack }) {
     }
   };
 
-  const fillDemoCredentials = (demoEmail, demoPassword) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-    setIsRegister(false);
-    setFieldErrors({});
-    setAlert('');
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4 py-10">
       <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
@@ -141,39 +133,9 @@ function LoginRegister({ onAuthSuccess, onBack }) {
           <p className="mt-2 text-sm text-slate-500">
             {isRegister
               ? 'Register as a patient or medical practitioner.'
-              : 'Login with your credentials or select a demo profile below.'}
+              : 'Sign in with your email address and password.'}
           </p>
         </div>
-
-        {/* Demo Fast-Login Helpers */}
-        {!isRegister && (
-          <div className="mt-5 rounded-2xl bg-slate-50 border border-slate-200 p-3">
-            <p className="text-xs font-semibold text-slate-600 mb-2">Quick Viva Demo Logins:</p>
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => fillDemoCredentials('john@test.com', 'patient123')}
-                className="text-xs bg-white border border-slate-200 hover:border-emerald-400 text-slate-700 hover:text-emerald-700 px-2.5 py-1 rounded-xl transition-all shadow-2xs font-medium"
-              >
-                👤 Patient (John)
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoCredentials('priya@test.com', 'doctor123')}
-                className="text-xs bg-white border border-slate-200 hover:border-emerald-400 text-slate-700 hover:text-emerald-700 px-2.5 py-1 rounded-xl transition-all shadow-2xs font-medium"
-              >
-                🩺 Doctor (Priya)
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoCredentials('admin@test.com', 'admin123')}
-                className="text-xs bg-white border border-slate-200 hover:border-purple-400 text-slate-700 hover:text-purple-700 px-2.5 py-1 rounded-xl transition-all shadow-2xs font-medium"
-              >
-                ⚡ Admin
-              </button>
-            </div>
-          </div>
-        )}
 
         {alert && (
           <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
