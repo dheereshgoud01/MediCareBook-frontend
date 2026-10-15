@@ -11,6 +11,7 @@ export default function AiAssistantModal({ user }) {
     },
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const [loadingSeconds, setLoadingSeconds] = useState(0);
   const responseCache = useRef({});
   const messagesEndRef = useRef(null);
