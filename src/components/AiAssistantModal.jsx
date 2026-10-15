@@ -11,7 +11,8 @@ export default function AiAssistantModal({ user }) {
     },
   ]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loadingSeconds, setLoadingSeconds] = useState(0);
+  const responseCache = useRef({});
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -24,9 +25,24 @@ export default function AiAssistantModal({ user }) {
     }
   }, [messages, isOpen]);
 
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      setLoadingSeconds(0);
+      interval = setInterval(() => {
+        setLoadingSeconds((s) => s + 1);
+      }, 1000);
+    } else {
+      setLoadingSeconds(0);
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
+
   const handleSend = async (textToSend) => {
-    const query = textToSend || input;
-    if (!query.trim() || loading) return;
+    const query = (textToSend || input).trim();
+    if (!query || loading) return;
+
+    const cacheKey = query.toLowerCase();
 
     const userMsg = {
       sender: 'user',
@@ -36,6 +52,20 @@ export default function AiAssistantModal({ user }) {
 
     setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) setInput('');
+
+    // Check fast session cache
+    if (responseCache.current[cacheKey]) {
+      const cached = responseCache.current[cacheKey];
+      setMessages((prev) => [
+        ...prev,
+        {
+          ...cached,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -48,6 +78,7 @@ export default function AiAssistantModal({ user }) {
         source: res.data.source,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
+      responseCache.current[cacheKey] = assistantMsg;
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err) {
       console.error(err);
@@ -55,7 +86,7 @@ export default function AiAssistantModal({ user }) {
         ...prev,
         {
           sender: 'assistant',
-          text: 'I am currently unable to reach the AI navigation service. Please try again in a few moments, or explore doctors directly via the Doctor Directory.',
+          text: 'I am currently unable to reach the AI navigation service. The cloud server may still be waking up. Please try asking again in a moment, or explore doctors directly via the Doctor Directory.',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -206,13 +237,17 @@ export default function AiAssistantModal({ user }) {
             ))}
 
             {loading && (
-              <div className="flex items-center gap-2 text-slate-500 text-xs p-2">
-                <div className="flex space-x-1">
+              <div className="flex items-center gap-2.5 text-slate-600 text-xs p-2.5 bg-slate-50 rounded-2xl border border-slate-200/60 shadow-xs">
+                <div className="flex space-x-1 shrink-0">
                   <div className="h-2 w-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                   <div className="h-2 w-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
                   <div className="h-2 w-2 bg-emerald-500 rounded-full animate-bounce"></div>
                 </div>
-                <span>Analyzing clinical guidelines...</span>
+                <span className="leading-tight">
+                  {loadingSeconds < 3 && 'Analyzing clinical guidelines...'}
+                  {loadingSeconds >= 3 && loadingSeconds < 12 && 'Waking up cloud server (Render free tier spin-up)...'}
+                  {loadingSeconds >= 12 && 'Server almost ready, loading AI response...'}
+                </span>
               </div>
             )}
             <div ref={messagesEndRef} />

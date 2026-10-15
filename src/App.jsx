@@ -44,7 +44,7 @@ function App() {
     }
   };
 
-  // Sync initial URL with browser history on first load
+  // Sync initial URL with browser history on first load & trigger background warm-up
   useEffect(() => {
     const initialView = getViewFromPath(sessionUser);
     setView(initialView);
@@ -52,6 +52,12 @@ function App() {
     if (initialView === 'auth') targetPath = '/login';
     else if (initialView === 'dashboard') targetPath = '/dashboard';
     window.history.replaceState({ view: initialView }, '', targetPath);
+
+    // Silent background warm-up for Render free tier spin-up
+    const backendUrl = import.meta.env.VITE_API_BASE_URL
+      || import.meta.env.VITE_URL
+      || (import.meta.env.PROD ? 'https://medicarebook-backend.onrender.com' : 'http://localhost:8000');
+    fetch(`${backendUrl}/api/doctors/list?_warm=1`, { method: 'GET' }).catch(() => {});
   }, []);
 
   // Listen for browser Back (←) and Forward (→) buttons with security guards
